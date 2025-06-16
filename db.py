@@ -4,6 +4,8 @@ conexao = sqlite3.connect('Cliente.db')
 cursor = conexao.cursor()
 
 # Criação das tabelas 
+
+# Tabela Clientes
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS cliente (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,6 +15,7 @@ cursor.execute("""
     )           
 """)
 
+# Tabela Chamados Abertos
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS chamadosAbertos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +24,7 @@ cursor.execute("""
     )           
 """)
 
+# Tabela Chamados Fechados
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS chamadosFechados (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,28 +36,6 @@ cursor.execute("""
 # Funções CRUD - Create, Read, Update, Delete
 
 # Create
-def abrirChamado(defeito, nome):
-
-    if defeito == "":
-        print("\nÉ necessário entrar com o defeito.")
-        return
-    
-    if nome == "":
-        print("\nÉ necessário entrar com o nome do cliente.")
-        return
-    
-    try:
-        cursor.execute("""
-            INSERT INTO chamadosAbertos (defeito, nomeCleinte)
-            VALUES (?, ?, ?)
-        """, (defeito, nome))
-        conexao.commit()
-        print("\nChamado aberto com sucesso!")
-    except sqlite3.IntegrityError:
-        print("\nErro: Chamdo já aberto.")
-    except Exception as e:
-        print(f"\nErro ao abrir chamado: {e}")
-
 def cadastrarCliente(nome, cnpj, endereco):
     # Casos da função
     if nome == "":
@@ -79,6 +61,28 @@ def cadastrarCliente(nome, cnpj, endereco):
         print("\nErro: Produto já cadastrado.")
     except Exception as e:
         print(f"\nErro ao cadastrar cliente: {e}")
+
+def abrirChamado(defeito, nome):
+
+    if defeito == "":
+        print("\nÉ necessário entrar com o defeito.")
+        return
+    
+    if nome == "":
+        print("\nÉ necessário entrar com o nome do cliente.")
+        return
+    
+    try:
+        cursor.execute("""
+            INSERT INTO chamadosAbertos (defeito, nomeCleinte)
+            VALUES (?, ?, ?)
+        """, (defeito, nome))
+        conexao.commit()
+        print("\nChamado aberto com sucesso!")
+    except sqlite3.IntegrityError:
+        print("\nErro: Chamdo já aberto.")
+    except Exception as e:
+        print(f"\nErro ao abrir chamado: {e}")
 
 # Read
 def mostrarClientes():
@@ -112,17 +116,17 @@ def mostrarChamadosFechados():
         print("\nNenhum chamado fechado.")
 
 # Update
-def atualizar_produto(quantidade, preco, id):
+def atualizarCliente(nome, cnpj, endereco, id):
     cursor.execute("""
-        UPDATE produtos
-        SET quantidade = ?, preco = ?
+        UPDATE cliente
+        SET nome = ?, cnpf = ?, endereco = ?
         WHERE id = ?
-    """, (quantidade, preco, id))
+    """, (nome, cnpj, endereco, id))
     conexao.commit()
     if cursor.rowcount > 0:
-        print("Produto atualizado com sucesso!")
+        print("Cliente atualizado com sucesso!")
     else:
-        print("Erro: Produto não encontrado.")
+        print("Erro: Cliente não encontrado.")
 
 # Delete
 def deletar_produto(id):
