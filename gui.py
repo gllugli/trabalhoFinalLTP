@@ -4,9 +4,18 @@ from tkinter import ttk
 import sqlite3
 from db import registerUser
 from db import deleteUser
+from db import registerClient
+from db import deleteClient
+from db import updateClient
 
 connection = sqlite3.connect("DataBase.db")
 cursor = connection.cursor()
+
+# Function to create the close button
+def closeButton(windowName):
+    closeButton = tk.Button(windowName, text="Close", command=windowName.destroy)
+    closeButton.pack(pady=10)
+    
 
 # Begin of "Buttons Admin"
 # Begin of "Users Windows"
@@ -15,14 +24,11 @@ def firstUserWindow():
     firstUserWindow.title("User Section")
     firstUserWindow.geometry("600x400")
 
-    # CRUD on TABLE user - Create, Read and Delete
-
     tk.Button(firstUserWindow, text="Show Users", command=showUsersWindow).pack(pady=10)
     tk.Button(firstUserWindow, text="Register User", command=registerUserWindow).pack(pady=10)
     tk.Button(firstUserWindow, text="Delete User", command=deleteUsersWindow).pack(pady=10)
 
-    closeButton = tk.Button(firstUserWindow, text="Close", command=lambda:firstUserWindow.destroy())
-    closeButton.pack()
+    closeButton(firstUserWindow)
 
     firstUserWindow.mainloop()
 
@@ -54,8 +60,7 @@ def showUsersWindow():
 
     tree.pack(expand=True, fill="both", padx=10, pady=10)
 
-    closeButton = tk.Button(showUsersWindow, text="Close", command=lambda:showUsersWindow.destroy())
-    closeButton.pack()
+    closeButton(showUsersWindow)
 
     showUsersWindow.mainloop()
 
@@ -99,10 +104,10 @@ def registerUserWindow():
     registerButton = tk.Button(registerUserWindow, text="Register", command=on_click)
     registerButton.pack()
 
-    closeButton = tk.Button(registerUserWindow, text="Close", command=lambda:registerUserWindow.destroy)
-    closeButton.pack(pady=10)
+    closeButton(registerUserWindow)
 
     registerUserWindow.mainloop()
+
 
 def deleteUsersWindow():
     deleteUsersWindow = tk.Tk()
@@ -112,7 +117,7 @@ def deleteUsersWindow():
     def on_click():
         userID = delete_entry.get()
 
-        deleteUser(userID[0])
+        deleteUser(userID)
         messagebox.showinfo("Success", "User delete with success!") 
 
         deleteUsersWindow.destroy()
@@ -126,18 +131,37 @@ def deleteUsersWindow():
     deleteButton = tk.Button(deleteUsersWindow, text="Confirm", command=on_click)
     deleteButton.pack()
 
+    closeButton(deleteUsersWindow)
+
     deleteUsersWindow.mainloop()
 # Fininsh of "Users Windows"
 
 # Begin of "Clients Windows"
+def firstClientWindow():
+    firstClientWindow = tk.Tk()
+    firstClientWindow.title("Clients")
+    firstClientWindow.geometry("600x400")
+
+    tk.Label(firstClientWindow, text="Choose an option:").pack(pady=10)
+
+    # CRUD - CREATE, READ, UPDATE, DELETE 
+    tk.Button(firstClientWindow, text="Show Clients", command=showClientsWindow).pack(pady=10)
+    tk.Button(firstClientWindow, text="Register Client", command=registerClientWindow).pack(pady=10)
+    tk.Button(firstClientWindow, text="Update Client Information", command=updateClientWindow).pack(pady=10)
+    tk.Button(firstClientWindow, text="Delete Client", command=deleteClientWindow).pack(pady=10)
+
+    closeButton(firstClientWindow)
+
+    firstClientWindow.mainloop()
+
 def showClientsWindow():
-    clientsWindow = tk.Tk()
-    clientsWindow.title("Clients")
-    clientsWindow.geometry("800x600")
+    showClientsWindow = tk.Tk()
+    showClientsWindow.title("Clients")
+    showClientsWindow.geometry("800x600")
 
-    tk.Label(clientsWindow, text=f"\nClients registered in the Data Base", font=("Arial", 16)).pack(pady=10)
+    tk.Label(showClientsWindow, text=f"\nClients registered in the Data Base", font=("Arial", 16)).pack(pady=10)
 
-    tree = ttk.Treeview(clientsWindow, columns=("ID", "Name", "CNPJ", "Address", "CEP"), show="headings")
+    tree = ttk.Treeview(showClientsWindow, columns=("ID", "Name", "CNPJ", "Address", "CEP"), show="headings")
 
     # Definir os nomes das colunas
     tree.heading("ID", text="ID")
@@ -157,15 +181,126 @@ def showClientsWindow():
     for row in rows:
         tree.insert("", tk.END, values=row)
 
-    scrollbar = tk.Scrollbar(clientsWindow, orient="horizontal", command=tree.xview)
+    scrollbar = tk.Scrollbar(showClientsWindow, orient="horizontal", command=tree.xview)
     tree.configure(xscrollcommand=scrollbar.set)
     tree.pack(expand=True, fill="both", padx=10, pady=10)
     scrollbar.pack(fill="x", padx=10)
 
-    closeButton = tk.Button(clientsWindow, text="Close", command=lambda: clientsWindow.destroy())
-    closeButton.pack()
+    closeButton(showClientsWindow)
 
-    clientsWindow.mainloop()
+    showClientsWindow.mainloop()
+
+def registerClientWindow():
+    registerClientWindow = tk.Tk()
+    registerClientWindow.title("Register Client")
+    registerClientWindow.geometry("600x400")
+
+    informationText = tk.Label(registerClientWindow, text="Enter the client's information")
+    informationText.pack()
+
+    nameText = tk.Label(registerClientWindow, text="Name")
+    nameText.pack()
+    nameEntry = tk.Entry(registerClientWindow, font=("Arial", 16))
+    nameEntry.pack()
+
+    cnpjText = tk.Label(registerClientWindow, text="CNPJ")
+    cnpjText.pack()
+    cnpjEntry = tk.Entry(registerClientWindow, font=("Arial", 16))
+    cnpjEntry.pack()
+
+    addressText = tk.Label(registerClientWindow, text="Address")
+    addressText.pack()
+    addressEntry = tk.Entry(registerClientWindow, font=("Arial", 16))
+    addressEntry.pack()
+
+    cepText = tk.Label(registerClientWindow, text="CEP")
+    cepText.pack()
+    cepEntry = tk.Entry(registerClientWindow, font=("Arial", 16))
+    cepEntry.pack()
+
+    def onClick():
+        name = nameEntry.get()
+        cnpj = cnpjEntry.get()
+        address = addressEntry.get()
+        cep = cepEntry.get()
+
+        registerClient(name, cnpj, address, cep)
+        messagebox.showinfo("Success!", "The client has been registered")
+
+        registerClientWindow.destroy()
+
+    registerButton = tk.Button(registerClientWindow, text="Register", command=onClick)
+    registerButton.pack()
+
+    closeButton(registerClientWindow)
+
+    registerClientWindow.mainloop()
+
+def updateClientWindow():
+    updateClientWindow = tk.Tk()
+    updateClientWindow.title("Update Client")
+    updateClientWindow.geometry("600x400")
+
+    informationText = tk.Label(updateClientWindow, text="Enter the client's information")
+    informationText.pack()
+
+    idText = tk.Label(updateClientWindow, text="Client ID")
+    idText.pack()
+    idEntry = tk.Entry(updateClientWindow, font=("Arial", 12))
+    idEntry.pack()
+
+    nameText = tk.Label(updateClientWindow, text="Name")
+    nameText.pack()
+    nameEntry = tk.Entry(updateClientWindow, font=("Arial", 12))
+    nameEntry.pack()
+
+    cnpjText = tk.Label(updateClientWindow, text="CNPJ")
+    cnpjText.pack()
+    cnpjEntry = tk.Entry(updateClientWindow, font=("Arial", 12))
+    cnpjEntry.pack()
+
+    addressText = tk.Label(updateClientWindow, text="Address")
+    addressText.pack()
+    addressEntry = tk.Entry(updateClientWindow, font=("Arial", 12))
+    addressEntry.pack()
+
+    cepText = tk.Label(updateClientWindow, text="CEP")
+    cepText.pack()
+    cepEntry = tk.Entry(updateClientWindow, font=("Arial", 12))
+    cepEntry.pack()
+
+    def onClick(clientID, name, cnpj, address, cep):
+        updateClient(name, cnpj, address, cep, clientID)
+        messagebox.showinfo("Success!", "The client has been updated")
+
+        updateClientWindow.destroy()
+
+    confirmButton = tk.Button(updateClientWindow, text="Confirm", command=lambda:onClick(idEntry.get(), nameEntry.get(), cnpjEntry.get(), addressEntry.get(), cepEntry.get()))
+    confirmButton.pack(pady=10)
+
+    updateClientWindow.mainloop()
+
+def deleteClientWindow():
+    deleteClientWindow = tk.Tk()
+    deleteClientWindow.title("Delete Client")
+    deleteClientWindow.geometry("600x400")
+
+    informationText = tk.Label(deleteClientWindow, text="Type the ID from the client that you want to delete")
+    informationText.pack()
+
+    userIdEntry = tk.Entry(deleteClientWindow, font=("Arial", 16))
+    userIdEntry.pack()
+
+    def onClick(clientID):
+        deleteClient(clientID)
+        messagebox.showinfo("Success", "The Client has been deleted")
+
+        deleteClientWindow.destroy()
+
+    deleteButton = tk.Button(deleteClientWindow, text="Confirm", command=lambda:onClick(userIdEntry.get()))
+    deleteButton.pack(pady=10)
+
+    deleteClientWindow.mainloop()
 
 # Begin of "Tickets Windows"
 def showTicketsWindow():
@@ -198,8 +333,8 @@ def openAdminWindow(user):
 
     # Buttons
     tk.Button(adminWindow, text="Users", command=firstUserWindow).pack(pady=10)
-    tk.Button(adminWindow, text="Clients", command=showClientsWindow).pack(pady=10)
-    tk.Button(adminWindow, text="Tickets", command=showTicketsWindow).pack(pady=10)
+    tk.Button(adminWindow, text="Clients", command=firstClientWindow).pack(pady=10)
+    #tk.Button(adminWindow, text="Tickets", command=firstTicketWindow).pack(pady=10)
 
     adminWindow.mainloop()
 
@@ -273,6 +408,3 @@ def openLoginWindow():
 
     login.mainloop()
 # End of "Login Window"
-
-
-

@@ -69,28 +69,15 @@ def registerUser(username, password, accountLevel):
 
     connection.close()
 
-def registerClient(name, cnpj, address):
-    # Casos da função
-    if name == "":
-        print("\nYou need to enter a name.")
-        return
-    
-    if cnpj == "":
-        print("\nYou need to enter a CNPJ.")
-        return
-    
-    if address == "":
-        print("\nYou need to enter an address.")
-        return
-    
+def registerClient(name, cnpj, address, cep):
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
 
     try:
         cursor.execute("""
-            INSERT INTO client (name, cnpj, address)
-            VALUES (?, ?, ?)
-        """, (name, cnpj, address))
+            INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+            VALUES (?, ?, ?, ?)
+        """, (name, cnpj, address, cep))
         connection.commit()
         print("\nClient registered successfully!")
     except sqlite3.IntegrityError:
@@ -173,15 +160,15 @@ def showClosedTickets():
     connection.close()
 
 # Update
-def updateClient(name, cnpj, address, id):
+def updateClient(name, cnpj, address, cep, id):
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
 
     cursor.execute("""
         UPDATE client
-        SET name = ?, cnpj = ?, address = ?
+        SET name = ?, cnpj = ?, address = ?, cep = ?
         WHERE id = ?
-    """, (name, cnpj, address, id))
+    """, (name, cnpj, address, cep, id))
     connection.commit()
     if cursor.rowcount > 0:
         print("Client updated with success!")
@@ -195,17 +182,21 @@ def deleteClient(clientID):
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
 
-    cursor.execute("DELETE FROM client WHERE id = ?", (clientID))
+    cursor.execute("DELETE FROM client WHERE id = ?", (clientID,))
+    connection.commit()
 
     connection.close()
 
 def deleteUser(userID):
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
-
-    cursor.execute("DELETE FROM user WHERE id = ?", (userID))
+        
+    cursor.execute("DELETE FROM user WHERE id = ?", (userID,))
+    connection.commit()
 
     connection.close()
+
+    return
 
 
 # Default Users (Admin & Client)
