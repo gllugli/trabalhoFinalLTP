@@ -5,19 +5,30 @@ cursor = connection.cursor()
 
 # Criação das tabelas 
 
+#Tabela de Usuários
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        accountLevel INT NOT NULL
+    )            
+""")
+
 # Tabela Clientes
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS client (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT UNIQUE NOT NULL,
         cnpj TEXT UNIQUE NOT NULL,
-        address TEXT NOT NULL
+        address TEXT NOT NULL,
+        cep TEXT NOT NULL
     )           
 """)
 
 # Tabela Chamados Abertos
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS openTickets (
+    CREATE TABLE IF NOT EXISTS openTicket (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         defect TEXT NOT NULL,
         clientName TEXT NOT NULL
@@ -26,16 +37,50 @@ cursor.execute("""
 
 # Tabela Chamados Fechados
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS closedTickets (
+    CREATE TABLE IF NOT EXISTS closedTicket (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         defect TEXT NOT NULL,
         clientName TEXT NOT NULL
     )           
 """)
 
+connection.close()
+
 # CRUD - Create, Read, Update, Delete
 
 # Create
+def registerUser(name, username, password, accountLevel):
+    if name == "":
+        print("\nYou need to enter a name.")
+        return
+    
+    if username == "":
+        print("\nYou need to enter a CNPJ.")
+        return
+    
+    if password == "":
+        print("\nYou need to enter an address.")
+        return
+    
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
+    if accountLevel == "":
+        print("\nThe account level will be determined to \"Client\" by default")
+        cursor.execute("""
+            INSERT INTO user (accountLevel)
+            VALUES (?)            
+        """, (0))
+        connection.commit()
+    
+    cursor.execute("""
+        INSERT INTO user (name, username, password, accountLevel)
+        VALUES (?, ?, ?, ?)            
+    """, (name, username, password, accountLevel))
+    connection.commit()
+
+    connection.close()
+
 def registerClient(name, cnpj, address):
     # Casos da função
     if name == "":
@@ -50,6 +95,9 @@ def registerClient(name, cnpj, address):
         print("\nYou need to enter an address.")
         return
     
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
     try:
         cursor.execute("""
             INSERT INTO client (name, cnpj, address)
@@ -62,8 +110,9 @@ def registerClient(name, cnpj, address):
     except Exception as e:
         print(f"\nError registering user: {e}")
 
-def openTicket(defect, name):
+    connection.close()
 
+def openTicket(defect, name):
     if defect == "":
         print("\nYou need to enter a defect.")
         return
@@ -72,6 +121,9 @@ def openTicket(defect, name):
         print("\nYou need to enter the name of the client.")
         return
     
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
     try:
         cursor.execute("""
             INSERT INTO openTickets (defect, clientName)
@@ -84,9 +136,14 @@ def openTicket(defect, name):
     except Exception as e:
         print(f"\nError opening ticket: {e}")
 
+    connection.close()
+
 # Read
 def showClients():
-    cursor.execute("SELECT * FROM clients")
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM client")
     clients = cursor.fetchall()
     if clients:
         print("\nClients Registered:")
@@ -95,8 +152,13 @@ def showClients():
     else:
         print("\nNo clients registered.")
 
+    connection.close()
+
 def showOpenTickets():
-    cursor.execute("SELECT * FROM openTickets")
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM openTicket")
     tickets = cursor.fetchall()
     if tickets:
         print("\nOpen Support Tickets:")
@@ -105,8 +167,13 @@ def showOpenTickets():
     else:
         print("\nNo open tickets.")
 
+    connection.close()
+
 def showClosedTickets():
-    cursor.execute("SELECT * FROM closedTickets")
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM closedTicket")
     tickets = cursor.fetchall()
     if tickets:
         print("\nClosed Support Tickets:")
@@ -115,8 +182,13 @@ def showClosedTickets():
     else:
         print("\nNo closed tickets.")
 
+    connection.close()
+
 # Update
 def updateClient(name, cnpj, address, id):
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
     cursor.execute("""
         UPDATE client
         SET name = ?, cnpj = ?, address = ?
@@ -128,7 +200,54 @@ def updateClient(name, cnpj, address, id):
     else:
         print("Error: Client not found.")
 
+    connection.close()
+
 # Delete
 def deleteClient(id):
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
     cursor.execute("DELETE FROM client WHERE id = ?", (id))
 
+    connection.close()
+
+
+# Default Users (Admin & Client)
+
+# Admin
+connection = sqlite3.connect('DataBase.db')
+cursor = connection.cursor()
+
+cursor.execute("""
+    INSERT INTO user (username, password, accountLevel)
+    VALUES(?, ?, ?)
+""", ("admin", 1234, 1))
+connection.commit()
+
+# Client
+cursor.execute("""
+    INSERT INTO user (username, password, accountLevel)
+    VALUES(?, ?, ?)
+""", ("client", 1234, 0))
+connection.commit()
+
+# Default Clients
+cursor.execute("""
+    INSERT INTO client (name, cnpj, address)
+    VALUES(?, ?, ?)
+""", ("Onyx Solution", "19.450.011/0001-00", "St. de Habitações Coletivas e Geminadas Norte 715 - Asa Norte, Brasília - DF", "70770-513"))
+connection.commit()
+
+cursor.execute("""
+    INSERT INTO client (name, cnpj, address)
+    VALUES(?, ?, ?)
+""", ("UniCEUB", "00.059.857/0001-87", "SEPN 707/907 - Asa Norte, Brasília-DF", "70790-075"))
+connection.commit()
+
+cursor.execute("""
+    INSERT INTO client (name, cnpj, address)
+    VALUES(?, ?, ?)
+""", ("Colégio Veritas", "54.045.157/0001-62", "AE, SEDB Instituo Israel Pinheiro Lote 2, Parte B - Lago Sul, Brasília - DF", "71676-010"))
+connection.commit()
+
+connection.close()
