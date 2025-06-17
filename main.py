@@ -2,4 +2,3 @@
 import gui as Interface
 
 Interface.openLoginWindow()
-

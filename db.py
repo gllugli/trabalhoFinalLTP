@@ -49,34 +49,22 @@ connection.close()
 # CRUD - Create, Read, Update, Delete
 
 # Create
-def registerUser(name, username, password, accountLevel):
-    if name == "":
-        print("\nYou need to enter a name.")
-        return
-    
+def registerUser(username, password, accountLevel):
     if username == "":
-        print("\nYou need to enter a CNPJ.")
+        print("\nYou need to enter an username.")
         return
     
     if password == "":
-        print("\nYou need to enter an address.")
+        print("\nYou need to enter a password.")
         return
     
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
-
-    if accountLevel == "":
-        print("\nThe account level will be determined to \"Client\" by default")
-        cursor.execute("""
-            INSERT INTO user (accountLevel)
-            VALUES (?)            
-        """, (0))
-        connection.commit()
     
     cursor.execute("""
-        INSERT INTO user (name, username, password, accountLevel)
-        VALUES (?, ?, ?, ?)            
-    """, (name, username, password, accountLevel))
+        INSERT INTO user (username, password, accountLevel)
+        VALUES (?, ?, ?)            
+    """, (username, password, accountLevel))
     connection.commit()
 
     connection.close()
@@ -203,11 +191,19 @@ def updateClient(name, cnpj, address, id):
     connection.close()
 
 # Delete
-def deleteClient(id):
+def deleteClient(clientID):
     connection = sqlite3.connect('DataBase.db')
     cursor = connection.cursor()
 
-    cursor.execute("DELETE FROM client WHERE id = ?", (id))
+    cursor.execute("DELETE FROM client WHERE id = ?", (clientID))
+
+    connection.close()
+
+def deleteUser(userID):
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM user WHERE id = ?", (userID))
 
     connection.close()
 
@@ -219,34 +215,34 @@ connection = sqlite3.connect('DataBase.db')
 cursor = connection.cursor()
 
 cursor.execute("""
-    INSERT INTO user (username, password, accountLevel)
+    INSERT OR IGNORE INTO user (username, password, accountLevel)
     VALUES(?, ?, ?)
 """, ("admin", 1234, 1))
 connection.commit()
 
 # Client
 cursor.execute("""
-    INSERT INTO user (username, password, accountLevel)
+    INSERT OR IGNORE INTO user (username, password, accountLevel)
     VALUES(?, ?, ?)
 """, ("client", 1234, 0))
 connection.commit()
 
 # Default Clients
 cursor.execute("""
-    INSERT INTO client (name, cnpj, address)
-    VALUES(?, ?, ?)
+    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+    VALUES(?, ?, ?, ?)
 """, ("Onyx Solution", "19.450.011/0001-00", "St. de Habitações Coletivas e Geminadas Norte 715 - Asa Norte, Brasília - DF", "70770-513"))
 connection.commit()
 
 cursor.execute("""
-    INSERT INTO client (name, cnpj, address)
-    VALUES(?, ?, ?)
+    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+    VALUES(?, ?, ?, ?)
 """, ("UniCEUB", "00.059.857/0001-87", "SEPN 707/907 - Asa Norte, Brasília-DF", "70790-075"))
 connection.commit()
 
 cursor.execute("""
-    INSERT INTO client (name, cnpj, address)
-    VALUES(?, ?, ?)
+    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+    VALUES(?, ?, ?, ?)
 """, ("Colégio Veritas", "54.045.157/0001-62", "AE, SEDB Instituo Israel Pinheiro Lote 2, Parte B - Lago Sul, Brasília - DF", "71676-010"))
 connection.commit()
 
