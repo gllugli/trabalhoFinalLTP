@@ -1,134 +1,134 @@
 import sqlite3
 
-conexao = sqlite3.connect('Cliente.db')
-cursor = conexao.cursor()
+connection = sqlite3.connect('DataBase.db')
+cursor = connection.cursor()
 
 # Criação das tabelas 
 
 # Tabela Clientes
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS cliente (
+    CREATE TABLE IF NOT EXISTS client (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT UNIQUE NOT NULL,
+        name TEXT UNIQUE NOT NULL,
         cnpj TEXT UNIQUE NOT NULL,
-        endereco TEXT NOT NULL
+        address TEXT NOT NULL
     )           
 """)
 
 # Tabela Chamados Abertos
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS chamadosAbertos (
+    CREATE TABLE IF NOT EXISTS openTickets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        defeito TEXT NOT NULL,
-        nomeCliente TEXT NOT NULL
+        defect TEXT NOT NULL,
+        clientName TEXT NOT NULL
     )           
 """)
 
 # Tabela Chamados Fechados
 cursor.execute("""
-    CREATE TABLE IF NOT EXISTS chamadosFechados (
+    CREATE TABLE IF NOT EXISTS closedTickets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        defeito TEXT NOT NULL,
-        nomeCliente TEXT NOT NULL
+        defect TEXT NOT NULL,
+        clientName TEXT NOT NULL
     )           
 """)
 
-# Funções CRUD - Create, Read, Update, Delete
+# CRUD - Create, Read, Update, Delete
 
 # Create
-def cadastrarCliente(nome, cnpj, endereco):
+def registerClient(name, cnpj, address):
     # Casos da função
-    if nome == "":
-        print("\nVocê precisa inserir um nome.")
+    if name == "":
+        print("\nYou need to enter a name.")
         return
     
     if cnpj == "":
-        print("\nVocê precisa inserir um CNPJ.")
+        print("\nYou need to enter a CNPJ.")
         return
     
-    if endereco == "":
-        print("\nVocê precisa inserir um endereço.")
+    if address == "":
+        print("\nYou need to enter an address.")
         return
     
     try:
         cursor.execute("""
             INSERT INTO produtos (nome, cnpj, endereco)
             VALUES (?, ?, ?)
-        """, (nome, cnpj, endereco))
-        conexao.commit()
-        print("\nProduto cadastrado com sucesso!")
+        """, (name, cnpj, address))
+        connection.commit()
+        print("\nClient registered with success!")
     except sqlite3.IntegrityError:
-        print("\nErro: Produto já cadastrado.")
+        print("\nError: Client already registered.")
     except Exception as e:
-        print(f"\nErro ao cadastrar cliente: {e}")
+        print(f"\nError registering user: {e}")
 
-def abrirChamado(defeito, nome):
+def openTicket(defect, name):
 
-    if defeito == "":
-        print("\nÉ necessário entrar com o defeito.")
+    if defect == "":
+        print("\nYou need to enter a defect.")
         return
     
-    if nome == "":
-        print("\nÉ necessário entrar com o nome do cliente.")
+    if name == "":
+        print("\nYou need to enter the name of the client.")
         return
     
     try:
         cursor.execute("""
-            INSERT INTO chamadosAbertos (defeito, nomeCleinte)
+            INSERT INTO openTickets (defect, clientName)
             VALUES (?, ?, ?)
-        """, (defeito, nome))
-        conexao.commit()
-        print("\nChamado aberto com sucesso!")
+        """, (defect, name))
+        connection.commit()
+        print("\nTicket successfully open!")
     except sqlite3.IntegrityError:
-        print("\nErro: Chamdo já aberto.")
+        print("\nError: Ticket already open.")
     except Exception as e:
-        print(f"\nErro ao abrir chamado: {e}")
+        print(f"\nError opening ticket: {e}")
 
 # Read
-def mostrarClientes():
-    cursor.execute("SELECT * FROM clientes")
-    clientes = cursor.fetchall()
-    if clientes:
-        print("\nClientes cadastrados:")
-        for clientes in clientes:
-            print(f"ID: {clientes[0]}, Nome: {clientes[1]}, CNPJ: {clientes[2]}, Endereço: {clientes[3]}")
+def showClients():
+    cursor.execute("SELECT * FROM clients")
+    clients = cursor.fetchall()
+    if clients:
+        print("\nClients Registered:")
+        for clients in clients:
+            print(f"ID: {clients[0]}, Name: {clients[1]}, CNPJ: {clients[2]}, Address: {clients[3]}")
     else:
-        print("\nNenhum cliente cadastrado.")
+        print("\nNo clients registered.")
 
-def mostrarChamadosAbertos():
-    cursor.execute("SELECT * FROM chamadosAbertos")
-    chamados = cursor.fetchall()
-    if chamados:
-        print("\nClientes cadastrados:")
-        for chamados in chamados:
-            print(f"\nID: {chamados[0]} \nDefeito: {chamados[1]} \nCliente: {chamados[2]}")
+def showOpenTickets():
+    cursor.execute("SELECT * FROM openTickets")
+    tickets = cursor.fetchall()
+    if tickets:
+        print("\nOpen Support Tickets:")
+        for tickets in tickets:
+            print(f"\nID: {tickets[0]} \nDefect: {tickets[1]} \nClient: {tickets[2]}")
     else:
-        print("\nNenhum chamado abertos.")
+        print("\nNo open tickets.")
 
-def mostrarChamadosFechados():
-    cursor.execute("SELECT * FROM chamadosFechados")
-    chamados = cursor.fetchall()
-    if chamados:
-        print("\nChamados Fechados:")
-        for chamados in chamados:
-            print(f"\nID: {chamados[0]} \nDefeito: {chamados[1]} \nCliente: {chamados[2]}")
+def showClosedTickets():
+    cursor.execute("SELECT * FROM closedTickets")
+    tickets = cursor.fetchall()
+    if tickets:
+        print("\nClosed Support Tickets:")
+        for tickets in tickets:
+            print(f"\nID: {tickets[0]} \nDefect: {tickets[1]} \nClient: {tickets[2]}")
     else:
-        print("\nNenhum chamado fechado.")
+        print("\nNo closed tickets.")
 
 # Update
-def atualizarCliente(nome, cnpj, endereco, id):
+def updateClient(name, cnpj, address, id):
     cursor.execute("""
-        UPDATE cliente
-        SET nome = ?, cnpf = ?, endereco = ?
+        UPDATE client
+        SET name = ?, cnpj = ?, address = ?
         WHERE id = ?
-    """, (nome, cnpj, endereco, id))
-    conexao.commit()
+    """, (name, cnpj, address, id))
+    connection.commit()
     if cursor.rowcount > 0:
-        print("Cliente atualizado com sucesso!")
+        print("Client updated with success!")
     else:
-        print("Erro: Cliente não encontrado.")
+        print("Error: Client not found.")
 
 # Delete
-def deletar_produto(id):
-    cursor.execute("DELETE FROM produtos WHERE id = ?", (id))
+def deleteClient(id):
+    cursor.execute("DELETE FROM client WHERE id = ?", (id))
 
