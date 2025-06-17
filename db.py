@@ -52,11 +52,11 @@ def registerClient(name, cnpj, address):
     
     try:
         cursor.execute("""
-            INSERT INTO produtos (nome, cnpj, endereco)
+            INSERT INTO client (name, cnpj, address)
             VALUES (?, ?, ?)
         """, (name, cnpj, address))
         connection.commit()
-        print("\nClient registered with success!")
+        print("\nClient registered successfully!")
     except sqlite3.IntegrityError:
         print("\nError: Client already registered.")
     except Exception as e:
