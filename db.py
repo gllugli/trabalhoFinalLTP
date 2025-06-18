@@ -30,8 +30,8 @@ cursor.execute("""
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS openTicket (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        defect TEXT NOT NULL,
-        clientName TEXT NOT NULL
+        clientName TEXT NOT NULL,
+        defect TEXT NOT NULL
     )           
 """)
 
@@ -39,8 +39,8 @@ cursor.execute("""
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS closedTicket (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        defect TEXT NOT NULL,
-        clientName TEXT NOT NULL
+        clientName TEXT NOT NULL,
+        defect TEXT NOT NULL
     )           
 """)
 
@@ -87,7 +87,7 @@ def registerClient(name, cnpj, address, cep):
 
     connection.close()
 
-def openTicket(defect, name):
+def openTicket(name, defect):
     if defect == "":
         print("\nYou need to enter a defect.")
         return
@@ -101,9 +101,9 @@ def openTicket(defect, name):
 
     try:
         cursor.execute("""
-            INSERT INTO openTickets (defect, clientName)
-            VALUES (?, ?, ?)
-        """, (defect, name))
+            INSERT INTO openTicket (clientName, defect)
+            VALUES (?, ?)
+        """, (name, defect))
         connection.commit()
         print("\nTicket successfully open!")
     except sqlite3.IntegrityError:
@@ -198,43 +198,65 @@ def deleteUser(userID):
 
     return
 
+def setupBD():
+    connection = sqlite3.connect('DataBase.db')
+    cursor = connection.cursor()
 
-# Default Users (Admin & Client)
+    cursor.execute("""
+        INSERT OR IGNORE INTO user (username, password, accountLevel)
+        VALUES(?, ?, ?)
+    """, ("admin", 1234, 1))
+    connection.commit()
 
-# Admin
-connection = sqlite3.connect('DataBase.db')
-cursor = connection.cursor()
+    # Client
+    cursor.execute("""
+        INSERT OR IGNORE INTO user (username, password, accountLevel)
+        VALUES(?, ?, ?)
+    """, ("client", 1234, 0))
+    connection.commit()
 
-cursor.execute("""
-    INSERT OR IGNORE INTO user (username, password, accountLevel)
-    VALUES(?, ?, ?)
-""", ("admin", 1234, 1))
-connection.commit()
+    # Default Clients
+    cursor.execute("""
+        INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+        VALUES(?, ?, ?, ?)
+    """, ("Onyx Solution", "19.450.011/0001-00", "St. de Habitações Coletivas e Geminadas Norte 715 - Asa Norte, Brasília - DF", "70770-513"))
+    connection.commit()
 
-# Client
-cursor.execute("""
-    INSERT OR IGNORE INTO user (username, password, accountLevel)
-    VALUES(?, ?, ?)
-""", ("client", 1234, 0))
-connection.commit()
+    cursor.execute("""
+        INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+        VALUES(?, ?, ?, ?)
+    """, ("UniCEUB", "00.059.857/0001-87", "SEPN 707/907 - Asa Norte, Brasília-DF", "70790-075"))
+    connection.commit()
 
-# Default Clients
-cursor.execute("""
-    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
-    VALUES(?, ?, ?, ?)
-""", ("Onyx Solution", "19.450.011/0001-00", "St. de Habitações Coletivas e Geminadas Norte 715 - Asa Norte, Brasília - DF", "70770-513"))
-connection.commit()
+    cursor.execute("""
+        INSERT OR IGNORE INTO client (name, cnpj, address, cep)
+        VALUES(?, ?, ?, ?)
+    """, ("Colégio Veritas", "54.045.157/0001-62", "AE, SEDB Instituo Israel Pinheiro Lote 2, Parte B - Lago Sul, Brasília - DF", "71676-010"))
+    connection.commit()
 
-cursor.execute("""
-    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
-    VALUES(?, ?, ?, ?)
-""", ("UniCEUB", "00.059.857/0001-87", "SEPN 707/907 - Asa Norte, Brasília-DF", "70790-075"))
-connection.commit()
+    # Default Open Tickets
+    cursor.execute("""
+        INSERT OR IGNORE INTO openTicket (clientName, defect)
+        VALUES(?, ?)
+    """, ("Colégio Veritas", "Impressora não está imprimindo"))
+    connection.commit()
 
-cursor.execute("""
-    INSERT OR IGNORE INTO client (name, cnpj, address, cep)
-    VALUES(?, ?, ?, ?)
-""", ("Colégio Veritas", "54.045.157/0001-62", "AE, SEDB Instituo Israel Pinheiro Lote 2, Parte B - Lago Sul, Brasília - DF", "71676-010"))
-connection.commit()
+    cursor.execute("""
+        INSERT OR IGNORE INTO openTicket (clientName, defect)
+        VALUES(?, ?)
+    """, ("UniCEUB", "Impressora está manchando"))
+    connection.commit()
 
-connection.close()
+    cursor.execute("""
+        INSERT OR IGNORE INTO closedTicket (clientName, defect)
+        VALUES(?, ?)
+    """, ("Colégio Veritas", "Impressora não está imprimindo"))
+    connection.commit()
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO closedTicket (clientName, defect)
+        VALUES(?, ?)
+    """, ("UniCEUB", "Impressora está manchando"))
+    connection.commit()
+
+    connection.close()

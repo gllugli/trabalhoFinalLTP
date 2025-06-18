@@ -7,9 +7,98 @@ from db import deleteUser
 from db import registerClient
 from db import deleteClient
 from db import updateClient
+from db import openTicket
 
 connection = sqlite3.connect("DataBase.db")
 cursor = connection.cursor()
+
+# Begin of "Login Window" 
+def openLoginWindow():
+    def verifyUser():
+        username = entry_user.get()
+        password = entry_password.get()
+
+        # Verify if the username exists in the Data Base
+        cursor.execute("SELECT 1 FROM user WHERE username=?", (username,))
+        userExists = cursor.fetchone()
+
+        if userExists:
+            pass
+        else:
+            messagebox.showerror("Error", "User doesn't exists.")
+            return
+        
+        # Verify the account level if the username exists
+        cursor.execute("SELECT accountLevel FROM user WHERE username=? AND password=?", (username, password))
+        result = cursor.fetchone()
+        connection.close()
+
+        if result:
+            accountLevel = result[0]
+
+            if accountLevel == 0: # Account Level = Client
+                login.destroy()
+                openClientWindow(username)
+            elif accountLevel == 1: # Account Level = Admin
+                login.destroy()
+                openAdminWindow(username)
+            else:
+                messagebox.showerror("Error", "Username or password incorrect!")
+
+    login = tk.Tk()
+    login.title("Help Desk System")
+    login.geometry("350x250")  
+
+    loginText = tk.Label(login, text="Login", font=("Arial", 16))
+    loginText.pack(pady=20)
+
+    usernameText = tk.Label(login, text="Username", font="Arial")
+    usernameText.pack()
+    entry_user = tk.Entry(login, font=("Arial", 10), width=25)
+    entry_user.pack(pady=(0, 10))
+
+    passwordText = tk.Label(login, text="Passoword", font="Arial")
+    passwordText.pack()
+    entry_password = tk.Entry(login, show="*", font=("Arial", 10), width=25)
+    entry_password.pack()
+
+    loginButton = tk.Button(login, text="Enter", command=verifyUser, width=20)
+    loginButton.pack(pady=10)
+
+    login.mainloop()
+# End of "Login Window"
+
+# Begin of "Admin and Client Windows"
+# Begin of "openAdminWindow"
+def openAdminWindow(user):
+    adminWindow = tk.Tk()
+    adminWindow.title("Software - Admin Level")
+    adminWindow.geometry("600x400")
+
+    tk.Label(adminWindow, text=f"\nWelcome, {user}!", font=("Arial", 16)).pack(pady=10)
+
+    # Buttons
+    tk.Button(adminWindow, text="Users", command=firstUserWindow).pack(pady=10)
+    tk.Button(adminWindow, text="Clients", command=firstClientWindow).pack(pady=10)
+    tk.Button(adminWindow, text="Tickets", command=firstTicketWindow).pack(pady=10)
+
+    adminWindow.mainloop()
+# End of "openAdminWindow"
+
+def openClientWindow(user):
+    clientWindow = tk.Tk()
+    clientWindow.title("Software - Client Level")
+    clientWindow.geometry("600x400")
+
+    tk.Label(clientWindow, text=f"\nWelcome, {user}!", font=("Arial", 16)).pack(pady=10)
+
+    # Buttons
+    # tk.Button(clientWindow, text="Users", command=).pack(pady=10)
+    # tk.Button(clientWindow, text="Clients", command=).pack(pady=10)
+    # tk.Button(clientWindow, text="Tickets", command=).pack(pady=10)
+
+    clientWindow.mainloop()
+# End of "Admin and Client Windows"
 
 # Function to create the close button
 def closeButton(windowName):
@@ -278,6 +367,8 @@ def updateClientWindow():
     confirmButton = tk.Button(updateClientWindow, text="Confirm", command=lambda:onClick(idEntry.get(), nameEntry.get(), cnpjEntry.get(), addressEntry.get(), cepEntry.get()))
     confirmButton.pack(pady=10)
 
+    closeButton(updateClientWindow)
+
     updateClientWindow.mainloop()
 
 def deleteClientWindow():
@@ -300,111 +391,167 @@ def deleteClientWindow():
     deleteButton = tk.Button(deleteClientWindow, text="Confirm", command=lambda:onClick(userIdEntry.get()))
     deleteButton.pack(pady=10)
 
+    closeButton(deleteClientWindow)
+
     deleteClientWindow.mainloop()
 
 # Begin of "Tickets Windows"
-def showTicketsWindow():
+def firstTicketWindow():
+    firstTicketWindow = tk.Tk()
+    firstTicketWindow.title("Ticket")
+    firstTicketWindow.geometry("600x400")
+
+    ticketInformation = tk.Label(firstTicketWindow, text="Choose an option:")
+    ticketInformation.pack(pady=10)
+
+    # CRUD - CREATE, READ, DELETE
+    showTicketsButton = tk.Button(firstTicketWindow, text="Show Tickets", command=ticketWindow)
+    showTicketsButton.pack(pady=10)
+    createTicketButton = tk.Button(firstTicketWindow, text="Create Ticket", command=createTicketWindow)
+    createTicketButton.pack(pady=10)
+    deleteTicketButton = tk.Button(firstTicketWindow, text="Delete Ticket", command=deleteTicketWindow)
+    deleteTicketButton.pack(pady=10)
+
+    firstTicketWindow.mainloop()
+
+# Begin of "ticketWindow"
+def ticketWindow():
     ticketWindow = tk.Tk()
     ticketWindow.title("Tickets")
     ticketWindow.geometry("600x400")
 
-    tk.Label(ticketWindow, text=f"\nChoose an option:", font=("Arial", 16)).pack(pady=10)
+    tk.Label(ticketWindow, text="\nChoose an option:", font=("Arial", 16)).pack(pady=10)
 
-    openTicketsButton = tk.Button(ticketWindow, text="Open Tickets")
-    openTicketsButton.pack()
+    openTicketsButton = tk.Button(ticketWindow, text="Open Tickets", command=showOpenTickets)
+    openTicketsButton.pack(pady=10)
 
-    closedTicketsButton = tk.Button(ticketWindow, text="Closed Tickets")
-    closedTicketsButton.pack()
+    closedTicketsButton = tk.Button(ticketWindow, text="Closed Tickets", command=showClosedTickets)
+    closedTicketsButton.pack(pady=10)
 
-    closeButton = tk.Button(ticketWindow, text="Close", command=lambda: ticketWindow.destroy())
-    closeButton.pack()
+    closeButton(ticketWindow)
 
     ticketWindow.mainloop()
-# End of "Tickets Windows"
-#End of "Admin Buttons"
+# End of "ticketWindow"
 
-# Begin of "Admin and Client Windows"
-def openAdminWindow(user):
-    adminWindow = tk.Tk()
-    adminWindow.title("Software - Admin Level")
-    adminWindow.geometry("600x400")
+def showOpenTickets():
+    showOpenTickets = tk.Tk()
+    showOpenTickets.title("Open Tickets")
+    showOpenTickets.geometry("600x400")
 
-    tk.Label(adminWindow, text=f"\nWelcome, {user}!", font=("Arial", 16)).pack(pady=10)
+    openTicketsInformation = tk.Label(showOpenTickets, text="These are the tickets that are open on the Data Base")
+    openTicketsInformation.pack(pady=10)
 
-    # Buttons
-    tk.Button(adminWindow, text="Users", command=firstUserWindow).pack(pady=10)
-    tk.Button(adminWindow, text="Clients", command=firstClientWindow).pack(pady=10)
-    #tk.Button(adminWindow, text="Tickets", command=firstTicketWindow).pack(pady=10)
+    tree = ttk.Treeview(showOpenTickets, columns=("ID", "Client Name", "Defect"), show="headings")
 
-    adminWindow.mainloop()
+    tree.heading("ID", text="ID")
+    tree.heading("Client Name", text="Client Name")
+    tree.heading("Defect", text="Defect")
 
-def openClientWindow(user):
-    clientWindow = tk.Tk()
-    clientWindow.title("Software - Client Level")
-    clientWindow.geometry("600x400")
+    connection = sqlite3.connect("DataBase.db")
+    cursor = connection.cursor()
+    cursor.execute("SELECT id, clientName, defect FROM openTicket")
+    rows = cursor.fetchall()
+    connection.close()
 
-    tk.Label(clientWindow, text=f"\nWelcome, {user}!", font=("Arial", 16)).pack(pady=10)
+    for row in rows:
+        tree.insert("", tk.END, values=row)
 
-    # Buttons
-    # tk.Button(clientWindow, text="Users", command=).pack(pady=10)
-    # tk.Button(clientWindow, text="Clients", command=).pack(pady=10)
-    # tk.Button(clientWindow, text="Tickets", command=).pack(pady=10)
+    scrollbar = tk.Scrollbar(showOpenTickets, orient="horizontal", command=tree.xview)
+    tree.configure(xscrollcommand=scrollbar.set)
+    tree.pack(expand=True, fill="both", padx=10, pady=10)
+    scrollbar.pack(fill="x", padx=10)    
 
-    clientWindow.mainloop()
-# End of "Admin and Client Windows"
+    showOpenTickets.mainloop()
 
-# Begin of "Login Window" 
-def openLoginWindow():
-    def verifyUser():
-        username = entry_user.get()
-        password = entry_password.get()
+def showClosedTickets():
+    showClosedTickets = tk.Tk()
+    showClosedTickets.title("Closed Tickets")
+    showClosedTickets.geometry("600x400")
 
-        # Verify if the username exists in the Data Base
-        cursor.execute("SELECT 1 FROM user WHERE username=?", (username,))
-        userExists = cursor.fetchone()
+    closedTicketsInformation = tk.Label(showClosedTickets, text="These are the tickets that are closed on the Data Base")
+    closedTicketsInformation.pack(pady=10)
 
-        if userExists:
-            pass
-        else:
-            messagebox.showerror("Error", "User doesn't exists.")
-            return
-        
-        # Verify the account level if the username exists
-        cursor.execute("SELECT accountLevel FROM user WHERE username=? AND password=?", (username, password))
-        result = cursor.fetchone()
+    tree = ttk.Treeview(showClosedTickets, columns=("ID", "Client Name", "Defect"), show="headings")
+
+    tree.heading("ID", text="ID")
+    tree.heading("Client Name", text="Client Name")
+    tree.heading("Defect", text="Defect")
+
+    connection = sqlite3.connect("DataBase.db")
+    cursor = connection.cursor()
+    cursor.execute("SELECT id, clientName, defect FROM closedTicket")
+    rows = cursor.fetchall()
+    connection.close()
+
+    for row in rows:
+        tree.insert("", tk.END, values=row)
+
+    scrollbar = tk.Scrollbar(showClosedTickets, orient="horizontal", command=tree.xview)
+    tree.configure(xscrollcommand=scrollbar.set)
+    tree.pack(expand=True, fill="both", padx=10, pady=10)
+    scrollbar.pack(fill="x", padx=10) 
+
+    showClosedTickets.mainloop()
+
+def createTicketWindow():
+    createTicketWindow = tk.Tk()
+    createTicketWindow.title("Create Ticket")
+    createTicketWindow.geometry("600x400")
+
+    createInformation = tk.Label(createTicketWindow, text="Type the following informations:")
+    createInformation.pack(pady=10)
+
+    clientName = tk.Label(createTicketWindow, text="Client Name")
+    clientName.pack(pady=10)
+    clientNameEntry = tk.Entry(createTicketWindow, font=("Arial", 12))
+    clientNameEntry.pack(pady=10)
+
+    defect = tk.Label(createTicketWindow, text="Defect")
+    defect.pack(pady=10)
+    defectNameEntry = tk.Entry(createTicketWindow, font=("Arial", 12))
+    defectNameEntry.pack(pady=10)
+
+    def onClick(name, defect):
+        clientName = name
+        ticketDefect = defect
+
+        openTicket(name, defect)
+
+        messagebox.showinfo("Success!", "Ticket opened successfully")
+        createTicketWindow.destroy()
+
+    registerButton = tk.Button(createTicketWindow, text="Register", command=lambda:onClick(clientNameEntry.get(), defectNameEntry.get()))
+    registerButton.pack(pady=10)
+
+    createTicketWindow.mainloop()
+
+def deleteTicketWindow():
+    deleteTicketWindow = tk.Tk()
+    deleteTicketWindow.title("Delete Ticket")
+    deleteTicketWindow.geometry("600x400")
+
+    def onClick(ticketIDEntry):
+        ticketID = ticketIDEntry
+
+        connection = sqlite3.connect("DataBase.db")
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM closedTicket WHERE id = ?", (ticketID,))
+        connection.commit()
+
         connection.close()
 
-        if result:
-            accountLevel = result[0]
+        messagebox.showinfo("Success!", "Ticket deleted successfully")
+        deleteTicketWindow.destroy()
 
-            if accountLevel == 0: # Account Level = Client
-                login.destroy()
-                openClientWindow(username)
-            elif accountLevel == 1: # Account Level = Admin
-                login.destroy()
-                openAdminWindow(username)
-            else:
-                messagebox.showerror("Error", "Username or password incorrect!")
+    deleteInformation = tk.Label(deleteTicketWindow, text="Enter the Ticket ID")
+    deleteInformation.pack(pady=10)
 
-    login = tk.Tk()
-    login.title("Help Desk System")
-    login.geometry("350x250")  
+    ticketIdEntry = tk.Entry(deleteTicketWindow, font=("Arial", 12))
+    ticketIdEntry.pack(pady=10)
 
-    loginText = tk.Label(login, text="Login", font=("Arial", 16))
-    loginText.pack(pady=20)
+    deleteButton = tk.Button(deleteTicketWindow, text="Confirm", command=lambda:onClick(ticketIdEntry.get()))
+    deleteButton.pack(pady=10)
 
-    usernameText = tk.Label(login, text="Username", font="Arial")
-    usernameText.pack()
-    entry_user = tk.Entry(login, font=("Arial", 10), width=25)
-    entry_user.pack(pady=(0, 10))
-
-    passwordText = tk.Label(login, text="Passoword", font="Arial")
-    passwordText.pack()
-    entry_password = tk.Entry(login, show="*", font=("Arial", 10), width=25)
-    entry_password.pack()
-
-    loginButton = tk.Button(login, text="Enter", command=verifyUser, width=20)
-    loginButton.pack(pady=10)
-
-    login.mainloop()
-# End of "Login Window"
+    deleteTicketWindow.mainloop()
+#End of "Admin Buttons"
