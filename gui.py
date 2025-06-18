@@ -1,13 +1,7 @@
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import (messagebox, ttk)
 import sqlite3
-from db import registerUser
-from db import deleteUser
-from db import registerClient
-from db import deleteClient
-from db import updateClient
-from db import openTicket
+from db import (registerUser, deleteUser, registerClient, deleteClient, updateClient, openTicket)
 
 connection = sqlite3.connect("DataBase.db")
 cursor = connection.cursor()
